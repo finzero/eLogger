@@ -1,0 +1,42 @@
+.Left-Menu{
+  background-color: #03a9f4;
+  color: #ffffff;
+}
+
+.Left-Menu span{
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.Left-Menu a{
+  text-decoration: none;
+}
+
+.Left-Menu .leftTitle{
+  background: #475f83;
+  min-height: 48px;
+  text-align: center;
+  line-height: 48px;
+  font-weight: bold;
+}
+
+.Left-Menu a.active li{
+  background-color: #ffffff;
+}
+
+.Left-Menu a.active span{
+  color: #000000;
+}
+
+.p-10{
+  padding: 10px;
+}
+
+.noPadding{
+  padding:0px!important;
+}
+
+.fixedContent { 
+  overflow-x: auto
+}
