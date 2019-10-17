@@ -12,14 +12,13 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-
-// icons
-
+import { useSelector } from 'react-redux';
 
 // import {Typography, Breadcrumbs, ListItemIcon, MenuList, MenuItem, Paper, Link} from "@material-ui/core";
 import Dashboard from "./dashboard/dashboard";
 import Expense from "./expense/expense";
 import Login from "./login/Login";
+import Logout from "./login/Logout";
 
 const useStyles = makeStyles(theme => ({
   root: { flexGrow: 1 },
@@ -34,10 +33,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const menu = [
-  {to:'dashboard', label: 'Dashboard', component: Dashboard, icon: 'dashboard'},
-  {to:'expense', label: 'Pengeluaran', component: Expense, icon: 'money'},
-  {to:'login', label: 'Login', component: Login, icon: 'lock'},
-  {to:'setting', label: 'Setting', icon: 'setting'}
+  {to:'login', label: 'Login', component: Login, icon: 'lock', protectedComp: false},
+  {to:'dashboard', label: 'Dashboard', component: Dashboard, icon: 'dashboard', protectedComp: true},
+  {to:'expense', label: 'Pengeluaran', component: Expense, icon: 'money', protectedComp: true},
+  {to:'setting', label: 'Setting', icon: 'setting', protectedComp: true},
+  {to:'logout', label: 'Logout', icon: 'lock', protectedComp: true}
 ];
 
 const section = {
@@ -46,13 +46,28 @@ const section = {
   position: "absolute"
 };
 
-const NotFoundRedirect = () => <Redirect to='/dashboard' />
-
 function App() {
   const classes = useStyles();
   const [leftMenu, setLeftMenu] = useState(true);
   const [contentWidth, setContentWidth] = useState(10);
-  const {width, height} = useWindowSize();
+  const { height } = useWindowSize();
+  
+  const isAuth = useSelector(state => state.authReducer.isAuth);
+  const PrivateRoute = ({ component: Component, ...rest }) => (
+    <Route {...rest} render={(props) => (
+      isAuth === true
+        ? <Component {...props} />
+        : <Redirect to='/login' />
+    )} />
+  )
+
+  const RedirectRoute = () => { 
+    if(isAuth){
+      return <Redirect to='/dashboard' /> 
+    } else {
+      return <Redirect to='/login' /> 
+    }
+  }
 
   function toggleLeftBar(){
     setLeftMenu(!leftMenu);
@@ -70,8 +85,9 @@ function App() {
             <MenuList className="noPadding">
               {
                 menu.map(m=>{
-                  const {to, icon, label} = m; 
-                  return (
+                  const {to, icon, label, protectedComp} = m; 
+                  {
+                    return isAuth === protectedComp ? (
                     <NavLink key={to} exact to={to}>
                       <MenuItem className="mItem" key={to}>
                         <MyIcon type={icon} />
@@ -80,7 +96,8 @@ function App() {
                         </ListItemIcon>
                       </MenuItem>
                     </NavLink>
-                  )
+                    ) : null
+                  }
                 })
               }
             </MenuList>
@@ -104,10 +121,11 @@ function App() {
             <div id="mainContent" style={{height: height-70 }} className="fixedContent p-10">
               <Switch>
                 <Route path='/login' component={Login} />
-                <Route path='/dashboard' component={Dashboard} />
-                <Route path='/expense' component={Expense} />
-                <Route path='/setting'> This Page is for setting </Route>
-                <Route component={NotFoundRedirect} />
+                <PrivateRoute path='/dashboard' component={Dashboard} />
+                <PrivateRoute path='/expense' component={Expense} />
+                <PrivateRoute path='/setting'> This Page is for setting </PrivateRoute>
+                <PrivateRoute path='/logout' component={Logout}></PrivateRoute>
+                <Route component={RedirectRoute} />
               </Switch>
             </div>
           </Grid>
@@ -129,20 +147,23 @@ function useWindowSize() {
   }
   
   const [windowSize, setWindowSize] = useState(getSize);
-
+  
   useEffect(() => {
     if (!isClient) {
       return false;
     }
+    
     
     function handleResize() {
       setWindowSize(getSize());
     }
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []); // Empty array ensures that effect is only run on mount and unmount
-  console.log('windowSize', windowSize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [])
+
   return windowSize;
 }
 

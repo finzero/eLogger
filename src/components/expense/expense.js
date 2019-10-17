@@ -40,7 +40,7 @@ const initialState  = {
 }
 
 export default function Expense(){
-  const { register, handleSubmit, watch, errors } = useForm()
+  const { register, handleSubmit,  errors } = useForm()
   const classes = useStyles();
   const [values, setValues] = useState(initialState);
   const [list, setList] = useState([]);
